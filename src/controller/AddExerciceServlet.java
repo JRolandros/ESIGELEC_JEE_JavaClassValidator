@@ -1,10 +1,12 @@
 package controller;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringReader;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -25,7 +27,7 @@ public class AddExerciceServlet extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		openFile(req);
+		//openFile(req);
 		
 		getServletContext().getRequestDispatcher("/MyJSP/addExercicePage.jsp").forward(req, resp);
 	}
@@ -36,7 +38,17 @@ public class AddExerciceServlet extends HttpServlet {
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		System.out.println("ok here!");
 		
-		saveFile(req);
+		int result=saveFile(req);
+		if(result==1)
+		{
+			System.out.println("probleme de caractère spéciaux !!");
+			getServletContext().getRequestDispatcher("/MyJSP/addExercicePage.jsp").forward(req, resp);
+		}
+		if(result==2)
+		{
+			System.out.println("incohérence entre le nom du fichier java et le nom de la classe!!");
+			getServletContext().getRequestDispatcher("/MyJSP/addExercicePage.jsp").forward(req, resp);
+		}
 		
 		
 		
@@ -73,11 +85,24 @@ public class AddExerciceServlet extends HttpServlet {
 	/**
 	 * @param req
 	 */
-	private void saveFile(HttpServletRequest req) {
+	private int saveFile(HttpServletRequest req) {
 		String appPath = req.getServletContext().getRealPath("");
 		String savePath = appPath + File.separator + SAVE_DIR;
-		String exoFileName=savePath+File.separator+"Exercise"+".java";
-		String exerciseText=req.getParameter("exercise");
+		String fileName=req.getParameter("className");
+		//validation du nom du fichier
+		fileName=fileName.replaceAll(" ", "");
+		 String regExpression = "[a-zA-Z_0-9]*";
+		 if(!fileName.matches(regExpression)) 					// s'il y a des caractère spéciaux sort de la methode
+			 return 1;
+		 String exerciseText=req.getParameter("exercise"); 			// récupération du contenu de l'exercice
+		 
+		 // comparaison du nom de fichier avec le nom de la classe
+		 
+		 String strTest="publicclass"+fileName+"{"; 				//nom de la classe attendu sans caractère espace
+		 String allExo=exerciseText.replaceAll(" ", "");
+		 if(!allExo.contains(strTest))
+			 return 2;
+		String exoFileName=savePath+File.separator+fileName+".java";
 		File fileSaveDir = new File(savePath);
 		if (!fileSaveDir.exists()) {
 			fileSaveDir.mkdir();
@@ -94,6 +119,7 @@ public class AddExerciceServlet extends HttpServlet {
 		 } catch (IOException er) {
 			 er.printStackTrace();
 		 }
+		return 0;
 	}
 	
 

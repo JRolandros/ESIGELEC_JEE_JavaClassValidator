@@ -34,6 +34,7 @@ public class WorkServlet extends HttpServlet {
 		
 		
 		try {
+			// this code goes in doPost and you have to retrieve the file first here
 			InputStream inputError=validatorJavaClass(req);
 			if(inputError!=null){
 				String appPath = req.getServletContext().getRealPath("");
@@ -78,17 +79,19 @@ public class WorkServlet extends HttpServlet {
 	}
 	
 	/**
+	 * this method allows you to compile a java code and return an input stream which can be examine 
+	 * to see if you did it well or not
 	 * @param req
 	 */
 	private InputStream validatorJavaClass(HttpServletRequest req) {
-		String appPath = req.getServletContext().getRealPath("");
-		String savePath = appPath + File.separator + SAVE_DIR;
-		String exoFileName=savePath+File.separator+"Exercise"+".java";
+		String appPath = req.getServletContext().getRealPath("");  		// the real path of the application, it gives it dynamically
+		String savePath = appPath + File.separator + SAVE_DIR;     		//the path to the directory where will be store all our files
+		String exoFileName=savePath+File.separator+"Exercise"+".java";	// file name
 		File fichier=new File(savePath); //a file with exercises and where to store class file generated
 		Process runtime;
 		InputStream inputError=null;
 		try {
-			runtime = Runtime.getRuntime().exec("javac -d "+savePath+" Exercise.java",null, fichier);
+			runtime = Runtime.getRuntime().exec("javac -d "+savePath+" Exercise.java",null, fichier); // compilation of the java file
 			
 		System.out.println("path appli :"+savePath);
 		//runtime.exec("java Exercise.class",null,fichier);
